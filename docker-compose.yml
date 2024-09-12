@@ -1,0 +1,70 @@
+version: '3.8'
+services:
+  data_cleaning:
+    build:
+      context: ./python-scripts
+      dockerfile: Dockerfile.python
+    command: python python-scripts/data_cleaning.py
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  web_crawler:
+    build:
+      context: ./python-scripts
+      dockerfile: Dockerfile.python
+    command: python python-scripts/web_crawler.py
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  indexing:
+    build:
+      context: ./python-scripts
+      dockerfile: Dockerfile.python
+    command: python python-scripts/indexing.py
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: "${DATABASE_USER}"
+      POSTGRES_PASSWORD: "${DATABASE_PASSWORD}"
+      POSTGRES_DB: "${DATABASE_NAME}"
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "${DATABASE_PORT}:${DATABASE_PORT}"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

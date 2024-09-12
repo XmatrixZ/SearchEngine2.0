@@ -1,0 +1,10 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY . .
+
+RUN pip install -r requirements.txt
+
+#Use a generic  CMD ["python"] to allow execution of any script within the python-scripts directory.
+CMD ["python"]  
